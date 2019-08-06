@@ -46,11 +46,14 @@ RUN set -ex \
         curl \
         rsync \
         netcat \
+        libpq5 \
         locales \
     && sed -i 's/^# en_US.UTF-8 UTF-8$/en_US.UTF-8 UTF-8/g' /etc/locale.gen \
     && locale-gen \
     && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
     && useradd -ms /bin/bash -d ${AIRFLOW_USER_HOME} airflow \
+    #可以更换为清华大学的源 毕竟有墙。。不稳定
+    && pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple \
     && pip install -U pip setuptools wheel \
     && pip install pytz \
     && pip install pyOpenSSL \
