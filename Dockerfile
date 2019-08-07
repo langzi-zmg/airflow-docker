@@ -15,7 +15,8 @@ ENV TERM linux
 ARG AIRFLOW_VERSION=1.10.3
 ARG AIRFLOW_USER_HOME=/usr/local/airflow
 ARG AIRFLOW_DEPS=""
-ARG PYTHON_DEPS=""
+#ARG PYTHON_DEPS=""
+ARG PYTHON_DEPS="boto3"
 ENV AIRFLOW_HOME=${AIRFLOW_USER_HOME}
 
 # Define en_US.
@@ -25,6 +26,7 @@ ENV LC_ALL en_US.UTF-8
 ENV LC_CTYPE en_US.UTF-8
 ENV LC_MESSAGES en_US.UTF-8
 
+ADD sources.list /etc/apt/
 RUN set -ex \
     && buildDeps=' \
         freetds-dev \
@@ -35,9 +37,9 @@ RUN set -ex \
         libpq-dev \
         git \
     ' \
-    && apt-get update -yqq \
-    && apt-get upgrade -yqq \
-    && apt-get install -yqq --no-install-recommends \
+    && apt-get update -y \
+    && apt-get upgrade -y \
+    && apt-get install -y --no-install-recommends \
         $buildDeps \
         freetds-bin \
         build-essential \
@@ -52,16 +54,17 @@ RUN set -ex \
     && locale-gen \
     && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
     && useradd -ms /bin/bash -d ${AIRFLOW_USER_HOME} airflow \
-    #可以更换为清华大学的源 毕竟有墙。。不稳定
     && pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple \
+    #&& pip config set global.index-url https://pypi.douban.com/ \
     && pip install -U pip setuptools wheel \
     && pip install pytz \
     && pip install pyOpenSSL \
     && pip install ndg-httpsclient \
     && pip install pyasn1 \
-    && pip install -e git+https://github.com/langzi-zmg/airflow-dingding-qyweixin.git\#egg\=apache-airflow[crypto,celery,postgres,hive,jdbc,mysql,slack] \ 
+    && pip install git+https://github.com/langzi-zmg/airflow-dingding-qyweixin-1.10.3.git@zmg-new\#egg\=apache-airflow[crypto,celery,postgres,hive,jdbc,mysql,slack,ssh${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION} \ 
     #&& pip install apache-airflow[crypto,celery,postgres,hive,jdbc,mysql,ssh${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION} \
     && pip install 'redis==3.2' \
+    && pip install 'Flask==1.0.4' \
     && if [ -n "${PYTHON_DEPS}" ]; then pip install ${PYTHON_DEPS}; fi \
     && apt-get purge --auto-remove -yqq $buildDeps \
     && apt-get autoremove -yqq --purge \
