@@ -37,9 +37,19 @@ RUN set -ex \
         libpq-dev \
         git \
     ' \
+    && rm -rf \
+        /var/lib/apt/lists/* \
+        /tmp/* \
+        /var/tmp/* \
+        /usr/share/man \
+        /usr/share/doc \
+        /usr/share/doc-base \
+    && apt-get clean all \
     && apt-get update -y \
     && apt-get upgrade -y \
-    && apt-get install -y --no-install-recommends \
+    && apt-get dist-upgrade -y \
+    && apt-get autoremove \
+    && apt-get install -y  \
         $buildDeps \
         freetds-bin \
         build-essential \
@@ -61,8 +71,9 @@ RUN set -ex \
     && pip install pyOpenSSL \
     && pip install ndg-httpsclient \
     && pip install pyasn1 \
-    && pip install git+https://github.com/langzi-zmg/airflow-dingding-qyweixin-1.10.3.git@zmg-new\#egg\=apache-airflow[crypto,celery,postgres,hive,jdbc,mysql,slack,ssh${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION} \ 
+    && pip install -e git+https://gitlab.wallstcn.com/opensource/airflow-dingding-qyweixin.git@qyweixin\#egg\=apache-airflow[crypto,celery,postgres,hive,jdbc,mysql,slack,ssh${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION} \
     #&& pip install apache-airflow[crypto,celery,postgres,hive,jdbc,mysql,ssh${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION} \
+    && pip install 'tzlocal==1.5.1' \
     && pip install 'redis==3.2' \
     && pip install 'Flask==1.0.4' \
     && if [ -n "${PYTHON_DEPS}" ]; then pip install ${PYTHON_DEPS}; fi \
